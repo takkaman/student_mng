@@ -1,0 +1,22 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.stu.web.school_teacher.mapper.SchoolTeacherMapper">
+    <select id="getTeacherStats" resultType="com.stu.web.school_teacher.entity.TeacherStatsVo">
+        select count(DISTINCT cc.class_id) as class_count, count(DISTINCT ss.stu_id) as student_count
+        from course_teacher as ct
+                 inner join class_course as cc on ct.course_id = cc.course_id and ct.teacher_id = cc.teacher_id
+                 inner join school_student as ss on ss.class_id = cc.class_id
+                 inner join school_course as sc on sc.course_id = ct.course_id
+        where ct.teacher_id = #{teacherId}
+    </select>
+
+    <select id="getAccCourseDuration" resultType="java.lang.Long">
+        select sum(duration)
+        from course_teacher as ct
+                 inner join class_course as cc on ct.course_id = cc.course_id and ct.teacher_id = cc.teacher_id
+                 inner join school_course as sc on sc.course_id = ct.course_id
+        where ct.teacher_id = #{teacherId}
+    </select>
+</mapper>

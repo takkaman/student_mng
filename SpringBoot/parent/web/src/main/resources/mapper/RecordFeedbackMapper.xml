@@ -1,0 +1,19 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.stu.web.record_feedback.mapper.RecordFeedbackMapper">
+    <select id="getFeedbackList" resultType="com.stu.web.record_feedback.entity.FeedbackVo">
+        select rf.record_feedback_id,sr.record_id,sr.title,sr.type,sr.sub_type,sr.year,sr.record_content,st.stu_name,st.stu_id,rf.status,rf.student_feedback,rf.admin_feedback from school_student as st
+        inner join record_feedback as rf on st.stu_id = rf.stu_id
+        inner join sys_record as sr on sr.record_id = rf.record_id
+        where 1
+        <if test="parm.title != null and parm.title !=''">
+            and sr.title like concat('%',#{parm.title},'%')
+        </if>
+        <if test="parm.type != null and parm.type !=''">
+            and sr.type = #{parm.type})
+        </if>
+        order by rf.create_time desc
+    </select>
+</mapper>

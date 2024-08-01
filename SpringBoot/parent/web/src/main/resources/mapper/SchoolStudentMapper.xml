@@ -1,0 +1,98 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.stu.web.school_student.mapper.SchoolStudentMapper">
+    <select id="getStuById" resultType="com.stu.web.school_student.entity.SchoolStudent">
+            select st.* ,sm.major_id,scc.college_id from school_student as st
+            left join school_class as sc on sc.class_id = st.class_id
+            left join school_major as sm on sm.major_id = sc.major_id
+            left join school_college as scc  on scc.college_id = sm.college_id
+            where st.stu_id =#{stuId}
+    </select>
+
+    <select id="getList" resultType="com.stu.web.school_student.entity.SchoolStudent">
+        select st.* ,sm.major_id,sm.major_name,scc.college_id,scc.college_name,sc.class_name from school_student as st
+        left join school_class as sc on sc.class_id = st.class_id
+        left join school_major as sm on sm.major_id = sc.major_id
+        left join school_college as scc  on scc.college_id = sm.college_id
+        where 1=1
+        <if test="parm.collegeId != null and parm.collegeId !=''">
+            and scc.college_id =#{parm.collegeId}
+        </if>
+        <if test="parm.majorId != null and parm.majorId !=''">
+            and sm.major_id =#{parm.majorId}
+        </if>
+        <if test="parm.classId != null and parm.classId !=''">
+            and sc.class_id =#{parm.classId}
+        </if>
+        <if test="parm.stuName != null and parm.stuName !=''">
+            and st.stu_name like  concat('%',#{parm.stuName},'%')
+        </if>
+    </select>
+
+    <select id="getCourseList" resultType="com.stu.web.school_student.entity.MyCourseVo">
+        select sc.course_name, stt.teacher_name, cc.course_year, cc.type, sp.point, sc.credit, sc.duration from school_student as st
+        inner join class_course as cc on cc.class_id = st.class_id
+        inner join school_course as sc on sc.course_id = cc.course_id
+        inner join school_teacher as stt on stt.teacher_id = cc.teacher_id
+        left join stu_points  as sp on sp.course_id =  cc.course_id and sp.stu_id = st.stu_id
+        where st.stu_id =#{parm.stuId}
+         <if test="parm.courseName != null and parm.courseName !=''">
+            and sc.course_name like  concat('%',#{parm.courseName},'%')
+        </if>
+        order by cc.course_year desc,cc.type asc
+    </select>
+
+    <select id="getStuRecordList" resultType="com.stu.web.school_student.entity.MyRecordVo">
+        select sr.record_id,sr.title,sr.sub_type,sr.year,sr.record_content from school_student as st
+        inner join record_student as rs on st.stu_id = rs.stu_id
+        inner join sys_record as sr on sr.record_id = rs.record_id
+        where st.stu_id =#{parm.stuId} and sr.type = #{parm.type}
+        <if test="parm.title != null and parm.title !=''">
+            and sr.title like concat('%',#{parm.title},'%')
+        </if>
+        order by sr.year desc
+    </select>
+
+    <select id="getStuFeedbackList" resultType="com.stu.web.record_feedback.entity.FeedbackVo">
+        select rf.record_feedback_id,sr.record_id,sr.title,sr.type,sr.sub_type,sr.year,sr.record_content,st.stu_name,st.stu_id,rf.status,rf.student_feedback,rf.admin_feedback,rf.update_time from school_student as st
+        inner join record_feedback as rf on st.stu_id = rf.stu_id
+        inner join sys_record as sr on sr.record_id = rf.record_id
+        where st.stu_id = #{parm.stuId}
+        <if test="parm.type != null and parm.type !=''">
+            and sr.type = #{param.type}
+        </if>
+        order by rf.update_time desc
+    </select>
+
+    <select id="getStuCount" resultType="com.stu.web.school_student.entity.StuCountVo">
+        select sc.class_year,count(st.stu_id) as stu_count from school_class as sc
+        inner join school_student as st on st.class_id = sc.class_id
+        group by sc.class_year
+        order by sc.class_year asc
+    </select>
+
+    <select id="getHotMajor" resultType="com.stu.web.school_student.entity.HotMajorVo">
+        select sm.major_name as name,count(st.stu_id) as value from school_major as sm
+        inner join school_class as sc on sc.major_id = sm.major_id
+        inner join school_student as st on st.class_id = sc.class_id
+        group by sm.major_id,sm.major_name
+        order by value desc
+        limit 5
+    </select>
+
+    <select id="getStuCourseStats" resultType="com.stu.web.school_student.entity.StuCourseStatsVo">
+        select count(*) as course_count, sum(sc.credit) as point_count, sum(sc.duration) as hour_count from school_course as sc
+             inner join class_course as cc on cc.course_id = sc.course_id
+             inner join school_student as ss on ss.class_id = cc.class_id
+        where ss.stu_id = #{stuId}
+    </select>
+
+    <select id="getStuScore" resultType="com.stu.web.school_student.entity.StuScoreTuple">
+        select sp.point as score, sc.credit from school_course as sc
+              inner join class_course as cc on cc.course_id = sc.course_id
+              inner join stu_points as sp on sp.course_id = sc.course_id
+        where sp.stu_id = #{stuId}
+    </select>
+</mapper>
